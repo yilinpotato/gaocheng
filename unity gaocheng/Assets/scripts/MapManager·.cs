@@ -6,12 +6,29 @@ using UnityEngine;
 public class MapManager : MonoBehaviour
 {
     public GameObject RoomPrefab;
+    public static MapManager Instance { get; private set; }
 
     // 存储图的邻接表
     private Dictionary<Node, List<Node>> graph = new Dictionary<Node, List<Node>>();
 
-    // 添加节点
-    public void AddNode(Node node)
+    // 为不同节点类型指定图案
+    public Sprite CombatNodeSprite;
+    public Sprite EventNodeSprite;
+    public Sprite BossNodeSprite;
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+// 添加节点
+public void AddNode(Node node)
     {
         if (!graph.ContainsKey(node))
         {
@@ -71,10 +88,28 @@ public class MapManager : MonoBehaviour
     // 创建节点并实例化对应的房间
     private T CreateNode<T>(string nodeName) where T : Node
     {
-        Vector3 position = new Vector3(Random.Range(-10, 10), Random.Range(-10, 10), 0); // 随机位置
+        const float minDistance = 3.0f; // 节点之间的最小距离
+        Vector3 position;
+
+        // 尝试生成一个满足条件的位置
+        int maxAttempts = 100; // 最大尝试次数，防止死循环
+        int attempts = 0;
+        do
+        {
+            position = new Vector3(Random.Range(-8, 8), Random.Range(-6, 6), 0);
+            attempts++;
+        } while (!IsPositionValid(position, minDistance) && attempts < maxAttempts);
+
+        if (attempts >= maxAttempts)
+        {
+            Debug.LogWarning($"无法找到满足条件的位置，使用最后尝试的位置: {position}");
+        }
+
+        // 实例化房间
         GameObject roomGO = Instantiate(RoomPrefab, position, Quaternion.identity);
         roomGO.name = nodeName;
 
+        // 添加节点组件
         T node = roomGO.AddComponent<T>();
         AddNode(node);
         return node;
@@ -108,5 +143,16 @@ public class MapManager : MonoBehaviour
                 unconnectedNodes.Remove(node2);
             }
         }
+    }
+    private bool IsPositionValid(Vector3 position, float minDistance)
+    {
+        foreach (var node in graph.Keys)
+        {
+            if (Vector3.Distance(node.transform.position, position) < minDistance)
+            {
+                return false; // 距离太近，位置无效
+            }
+        }
+        return true; // 位置有效
     }
 }

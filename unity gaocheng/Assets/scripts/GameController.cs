@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    private MapManager mapManager;
+    public MapManager mapManager;
 
     // Start is called before the first frame update  
     void Start()

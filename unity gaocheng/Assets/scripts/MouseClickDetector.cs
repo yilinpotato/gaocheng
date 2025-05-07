@@ -14,6 +14,22 @@ public class MouseClickDetector : MonoBehaviour
     void Start()
     {
         sr = GetComponent<SpriteRenderer>();
+
+        // 根据节点类型设置 idleSprite
+        Node node = GetComponent<Node>();
+        if (node is CombatNode)
+        {
+            idleSprite = MapManager.Instance.CombatNodeSprite; // 假设 MapManager 是单例
+        }
+        else if (node is EventNode)
+        {
+            idleSprite = MapManager.Instance.EventNodeSprite;
+        }
+        else if (node is BossNode)
+        {
+            idleSprite = MapManager.Instance.BossNodeSprite;
+        }
+
         sr.sprite = idleSprite;
     }
 
