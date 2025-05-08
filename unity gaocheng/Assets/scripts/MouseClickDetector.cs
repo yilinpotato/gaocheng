@@ -15,21 +15,43 @@ public class MouseClickDetector : MonoBehaviour
     {
         sr = GetComponent<SpriteRenderer>();
 
-        // 根据节点类型设置 idleSprite
+        // 获取当前节点
         Node node = GetComponent<Node>();
-        if (node is CombatNode)
+        if (node == null)
         {
-            idleSprite = MapManager.Instance.CombatNodeSprite; // 假设 MapManager 是单例
-        }
-        else if (node is EventNode)
-        {
-            idleSprite = MapManager.Instance.EventNodeSprite;
-        }
-        else if (node is BossNode)
-        {
-            idleSprite = MapManager.Instance.BossNodeSprite;
+            Debug.LogWarning("未找到 Node 组件");
+            return;
         }
 
+        // 获取节点 ID
+        int nodeId = node.Id;
+
+        // 从映射表中获取节点类型
+        if (MapManager.Instance.nodeTypeMap.TryGetValue(nodeId, out string nodeType))
+        {
+            // 根据节点类型设置 idleSprite
+            switch (nodeType)
+            {
+                case "BossNode":
+                    idleSprite = MapManager.Instance.BossNodeSprite;
+                    break;
+                case "CombatNode":
+                    idleSprite = MapManager.Instance.CombatNodeSprite;
+                    break;
+                case "EventNode":
+                    idleSprite = MapManager.Instance.EventNodeSprite;
+                    break;
+                default:
+                    Debug.LogWarning($"未知的节点类型: {nodeType}");
+                    break;
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"节点 ID {nodeId} 未在映射表中找到");
+        }
+
+        // 设置初始显示的 Sprite
         sr.sprite = idleSprite;
     }
 

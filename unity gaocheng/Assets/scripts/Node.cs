@@ -118,3 +118,32 @@ public class CompletedNode : Node
         Debug.Log($"节点 {Id} 已完成");
     }
 }
+// 初始节点
+public class InitialNode : Node
+{
+    // 是否为起始节点
+    public bool IsStartNode { get; private set; } = true;
+
+    // 初始节点的描述
+    public string StartDescription { get; private set; }
+
+    // 设置初始节点的描述
+    public void SetStartDescription(string description)
+    {
+        StartDescription = description;
+    }
+
+    // 初始化逻辑
+    public void Initialize()
+    {
+        Debug.Log($"初始节点 {Id} 已初始化: {StartDescription}");
+        // 在这里实现更多初始化逻辑
+    }
+
+    // 特殊显示样式
+    public void HighlightAsStartNode()
+    {
+        Debug.Log($"节点 {Id} 被高亮为初始节点");
+        // 在这里实现高亮逻辑，例如更改颜色或外观
+    }
+}
