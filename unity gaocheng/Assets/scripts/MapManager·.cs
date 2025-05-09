@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
-    public GameObject RoomPrefab;
+    public GameObject RoomPrefeb;
+
     public static MapManager Instance { get; private set; }
 
     // 用于生成唯一的节点 ID
@@ -19,9 +20,12 @@ public class MapManager : MonoBehaviour
     private Dictionary<Node, List<Node>> graph = new Dictionary<Node, List<Node>>();
 
     // 为不同节点类型指定图案
+    public Sprite InitialNodeSprite;
     public Sprite CombatNodeSprite;
     public Sprite EventNodeSprite;
     public Sprite BossNodeSprite;
+    private List<VirtualNode> virtualNodes = new List<VirtualNode>();
+    private List<VirtualEdge> virtualEdges = new List<VirtualEdge>();
     private void Awake()
     {
         if (Instance == null)
@@ -71,64 +75,41 @@ public void AddNode(Node node)
     // 生成地图
     public void GenerateMap()
     {
-        List<Node> allNodes = new List<Node>();
-
-        // 创建 10~15 个节点
+        // 创建虚拟节点
         int totalNodeCount = Random.Range(10, 16);
         for (int i = 0; i < totalNodeCount; i++)
         {
-            Node node = CreateNode<Node>($"Node_{i}");
-            allNodes.Add(node);
+            VirtualNode virtualNode = new VirtualNode
+            {
+                Id = currentId++,
+                Position = GenerateValidPosition()
+            };
+            virtualNodes.Add(virtualNode);
         }
 
-        // 形成最小生成树
-        ConnectNodesWithMST(allNodes);
+        // 创建虚拟边并形成最小生成树
+        ConnectVirtualNodesWithMST();
 
         // 根据连接数分配节点类型
-        AssignNodeTypes(allNodes);
-    }
+        AssignVirtualNodeTypes();
 
-    // 创建节点并实例化对应的房间
-    private T CreateNode<T>(string nodeName) where T : Node
-    {
-        const float minDistance = 2.0f; // 节点之间的最小距离
-        Vector3 position;
-
-        // 尝试生成一个满足条件的位置
-        int maxAttempts = 100; // 最大尝试次数，防止死循环
-        int attempts = 0;
-        do
-        {
-            position = new Vector3(Random.Range(-8, 8), Random.Range(-6, 6), 0);
-            attempts++;
-        } while (!IsPositionValid(position, minDistance) && attempts < maxAttempts);
-
-        if (attempts >= maxAttempts)
-        {
-            Debug.LogWarning($"无法找到满足条件的位置，使用最后尝试的位置: {position}");
-        }
-
-        // 实例化房间
-        GameObject roomGO = Instantiate(RoomPrefab, position, Quaternion.identity);
-        roomGO.name = nodeName;
-
-        // 添加节点组件
-        T node = roomGO.AddComponent<T>();
-        node.SetId(currentId++); // 分配唯一 ID
-        AddNode(node);
-        return node;
+        // 根据虚拟信息实例化节点和边
+        InstantiateNodesAndEdges();
     }
 
 
     private bool IsPositionValid(Vector3 position, float minDistance)
     {
-        foreach (var node in graph.Keys)
+        // 检查虚拟节点的位置
+        foreach (var virtualNode in virtualNodes)
         {
-            if (Vector3.Distance(node.transform.position, position) < minDistance)
+            if (Vector3.Distance(virtualNode.Position, position) < minDistance)
             {
                 return false; // 距离太近，位置无效
             }
         }
+
+
         return true; // 位置有效
     }
     private void DrawEdge(Vector3 start, Vector3 end)
@@ -149,32 +130,60 @@ public void AddNode(Node node)
         lineRenderer.startColor = Color.white;
         lineRenderer.endColor = Color.white;
     }
-    private float GetDistance(Node node1, Node node2)
-    {
-        return Vector3.Distance(node1.transform.position, node2.transform.position);
-    }
-    private void ConnectNodesWithMST(List<Node> allNodes)
-    {
-        HashSet<Node> connectedNodes = new HashSet<Node>();
-        List<Node> unconnectedNodes = new List<Node>(allNodes);
 
-        // 从第一个节点开始
-        Node startNode = unconnectedNodes[0];
+    private void SetNodeStyle(GameObject nodeObject, Sprite sprite)
+    {
+        SpriteRenderer spriteRenderer = nodeObject.GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            spriteRenderer = nodeObject.AddComponent<SpriteRenderer>();
+        }
+        spriteRenderer.sprite = sprite;
+    }
+    private Vector3 GenerateValidPosition()
+    {
+        const float minDistance = 3.0f;
+        Vector3 position;
+        int maxAttempts = 100;
+        int attempts = 0;
+
+        do
+        {
+            position = new Vector3(Random.Range(-8, 8), Random.Range(-6, 6), 0);
+            attempts++;
+        } while (!IsPositionValid(position, minDistance) && attempts < maxAttempts);
+
+        if (attempts >= maxAttempts)
+        {
+            Debug.LogWarning($"无法找到满足条件的位置，使用最后尝试的位置: {position}");
+        }
+        else
+        {
+            Debug.Log($"生成节点位置: {position}");
+        }
+
+        return position;
+    }
+    private void ConnectVirtualNodesWithMST()
+    {
+        HashSet<VirtualNode> connectedNodes = new HashSet<VirtualNode>();
+        List<VirtualNode> unconnectedNodes = new List<VirtualNode>(virtualNodes);
+
+        VirtualNode startNode = unconnectedNodes[0];
         connectedNodes.Add(startNode);
         unconnectedNodes.Remove(startNode);
 
         while (unconnectedNodes.Count > 0)
         {
-            Node closestNode = null;
-            Node fromNode = null;
+            VirtualNode closestNode = null;
+            VirtualNode fromNode = null;
             float minDistance = float.MaxValue;
 
-            // 找到最近的未连接节点
-            foreach (Node connectedNode in connectedNodes)
+            foreach (VirtualNode connectedNode in connectedNodes)
             {
-                foreach (Node unconnectedNode in unconnectedNodes)
+                foreach (VirtualNode unconnectedNode in unconnectedNodes)
                 {
-                    float distance = GetDistance(connectedNode, unconnectedNode);
+                    float distance = Vector3.Distance(connectedNode.Position, unconnectedNode.Position);
                     if (distance < minDistance)
                     {
                         minDistance = distance;
@@ -184,42 +193,41 @@ public void AddNode(Node node)
                 }
             }
 
-            // 连接最近的节点
             if (closestNode != null && fromNode != null)
             {
-                AddEdge(fromNode, closestNode);
+                virtualEdges.Add(new VirtualEdge { Node1Id = fromNode.Id, Node2Id = closestNode.Id });
+                fromNode.Neighbors.Add(closestNode.Id);
+                closestNode.Neighbors.Add(fromNode.Id);
                 connectedNodes.Add(closestNode);
                 unconnectedNodes.Remove(closestNode);
             }
         }
     }
-    private void AssignNodeTypes(List<Node> allNodes)
+    private void AssignVirtualNodeTypes()
     {
-        Node initialNode = null;
-        Node bossNode = null;
+        VirtualNode initialNode = null;
+        VirtualNode bossNode = null;
         int maxConnections = -1;
 
         // 找到连接数最多的节点，设置为初始节点
-        foreach (Node node in allNodes)
+        foreach (VirtualNode node in virtualNodes)
         {
-            int connectionCount = graph[node].Count;
-            if (connectionCount > maxConnections)
+            if (node.Neighbors.Count > maxConnections)
             {
-                maxConnections = connectionCount;
+                maxConnections = node.Neighbors.Count;
                 initialNode = node;
             }
         }
 
         if (initialNode != null)
         {
-            Debug.Log($"{initialNode.name} 被分配为初始节点");
-            // 这里可以为初始节点添加特殊逻辑或标记
+            initialNode.NodeType = "InitialNode";
         }
 
         // 找到一个叶子节点作为 Boss 节点
-        foreach (Node node in allNodes)
+        foreach (VirtualNode node in virtualNodes)
         {
-            if (graph[node].Count == 1) // 叶子节点
+            if (node.Neighbors.Count == 1 && node.NodeType == null)
             {
                 bossNode = node;
                 break;
@@ -228,50 +236,69 @@ public void AddNode(Node node)
 
         if (bossNode != null)
         {
-            BossNode boss = bossNode.gameObject.AddComponent<BossNode>();
-            SetNodeStyle(bossNode.gameObject, MapManager.Instance.BossNodeSprite); // 设置样式
-            bossNode.gameObject.name = $"BossNode_{bossNode.name}"; // 更新名称
-            nodeTypeMap[bossNode.Id] = "BossNode"; // 保存到映射表
-            Destroy(bossNode); // 移除原始 Node 脚本
-            Debug.Log($"{boss.name} 被分配为 Boss 节点");
-            allNodes.Remove(bossNode); // 移除已分配的 Boss 节点
+            bossNode.NodeType = "BossNode";
         }
 
-        // 将非 Boss 的叶子节点分配为事件节点
-        foreach (Node node in allNodes)
+        // 将剩余节点分配为事件节点或战斗节点
+        foreach (VirtualNode node in virtualNodes)
         {
-            if (graph[node].Count == 1 && node.GetComponent<BossNode>() == null) // 叶子节点且不是 Boss 节点
+            if (node.NodeType == null)
             {
-                EventNode eventNode = node.gameObject.AddComponent<EventNode>();
-                SetNodeStyle(node.gameObject, MapManager.Instance.EventNodeSprite); // 设置样式
-                node.gameObject.name = $"EventNode_{node.name}"; // 更新名称
-                nodeTypeMap[node.Id] = "EventNode"; // 保存到映射表
-                Destroy(node); // 移除原始 Node 脚本
-                Debug.Log($"{eventNode.name} 被分配为事件节点");
-            }
-        }
-
-        // 将剩余节点分配为战斗节点
-        foreach (Node node in allNodes)
-        {
-            if (node != null && node.GetComponent<BossNode>() == null && node.GetComponent<EventNode>() == null)
-            {
-                CombatNode combatNode = node.gameObject.AddComponent<CombatNode>();
-                SetNodeStyle(node.gameObject, MapManager.Instance.CombatNodeSprite); // 设置样式
-                node.gameObject.name = $"CombatNode_{node.name}"; // 更新名称
-                nodeTypeMap[node.Id] = "CombatNode"; // 保存到映射表
-                Destroy(node); // 移除原始 Node 脚本
-                Debug.Log($"{combatNode.name} 被分配为战斗节点");
+                node.NodeType = node.Neighbors.Count == 1 ? "EventNode" : "CombatNode";
             }
         }
     }
-    private void SetNodeStyle(GameObject nodeObject, Sprite sprite)
+    private void InstantiateNodesAndEdges()
     {
-        SpriteRenderer spriteRenderer = nodeObject.GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null)
+        Dictionary<int, Node> instantiatedNodes = new Dictionary<int, Node>();
+
+        foreach (VirtualNode virtualNode in virtualNodes)
         {
-            spriteRenderer = nodeObject.AddComponent<SpriteRenderer>();
+            // 统一使用 RoomPrefeb 进行实例化
+            GameObject roomGO = Instantiate(RoomPrefeb, virtualNode.Position, Quaternion.identity);
+            roomGO.name = $"Node_{virtualNode.Id}";
+
+            // 根据节点类型添加对应的组件
+            Node node;
+            switch (virtualNode.NodeType)
+            {
+                case "InitialNode":
+                    node = roomGO.AddComponent<InitialNode>();
+                    SetNodeStyle(roomGO, InitialNodeSprite); // 可为初始节点设置独特样式
+                    break;
+                case "BossNode":
+                    node = roomGO.AddComponent<BossNode>();
+                    SetNodeStyle(roomGO, BossNodeSprite);
+                    break;
+                case "EventNode":
+                    node = roomGO.AddComponent<EventNode>();
+                    SetNodeStyle(roomGO, EventNodeSprite);
+                    break;
+                case "CombatNode":
+                default:
+                    node = roomGO.AddComponent<CombatNode>();
+                    SetNodeStyle(roomGO, CombatNodeSprite);
+                    break;
+            }
+
+            // 设置节点 ID 并添加到图中
+            node.SetId(virtualNode.Id);
+            instantiatedNodes[virtualNode.Id] = node;
+            AddNode(node);
+
+            // 将节点 ID 和类型添加到映射表
+            if (!nodeTypeMap.ContainsKey(virtualNode.Id))
+            {
+                nodeTypeMap.Add(virtualNode.Id, virtualNode.NodeType);
+            }
         }
-        spriteRenderer.sprite = sprite;
+
+        // 创建边
+        foreach (VirtualEdge virtualEdge in virtualEdges)
+        {
+            Node node1 = instantiatedNodes[virtualEdge.Node1Id];
+            Node node2 = instantiatedNodes[virtualEdge.Node2Id];
+            AddEdge(node1, node2);
+        }
     }
 }

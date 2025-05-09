@@ -557,7 +557,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c33cffa97072b8e4d839dfaf56131aa5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RoomPrefab: {fileID: 2143247889}
+  RoomPrefeb: {fileID: 2143247889}
+  InitialNodeSprite: {fileID: -2413806693520163455, guid: 63c1638edd7c4764b9bf459cb71061fe, type: 3}
   CombatNodeSprite: {fileID: -2413806693520163455, guid: 4933972101784814b82b4527a715669b, type: 3}
   EventNodeSprite: {fileID: -2413806693520163455, guid: 97106f962e6e0f9458ba0098d9aff726, type: 3}
   BossNodeSprite: {fileID: -2413806693520163455, guid: 5279522b31f88a94fbc94f542020b091, type: 3}
