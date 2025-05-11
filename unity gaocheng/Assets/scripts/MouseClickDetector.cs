@@ -11,6 +11,10 @@ public class MouseClickDetector : MonoBehaviour
 
     private SpriteRenderer sr;
 
+    // 引用节点信息面板
+    public GameObject nodeInfoPanel; // 面板预制体
+    private NodeInfoUI nodeInfoUI;   // 面板的脚本组件
+
     void Start()
     {
         sr = GetComponent<SpriteRenderer>();
@@ -42,7 +46,7 @@ public class MouseClickDetector : MonoBehaviour
                     idleSprite = MapManager.Instance.EventNodeSprite;
                     break;
                 case "InitialNode":
-                    idleSprite = MapManager.Instance.InitialNodeSprite; // 可设置为独特的样式
+                    idleSprite = MapManager.Instance.InitialNodeSprite;
                     break;
                 default:
                     Debug.LogWarning($"未知的节点类型: {nodeType}");
@@ -56,6 +60,12 @@ public class MouseClickDetector : MonoBehaviour
 
         // 设置初始显示的 Sprite
         sr.sprite = idleSprite;
+
+        // 获取面板的脚本组件
+        if (nodeInfoPanel != null)
+        {
+            nodeInfoUI = nodeInfoPanel.GetComponent<NodeInfoUI>();
+        }
     }
 
     void OnMouseEnter()
@@ -98,6 +108,9 @@ public class MouseClickDetector : MonoBehaviour
                 case "EventNode":
                     idleSprite = MapManager.Instance.EventNodeSprite;
                     break;
+                case "InitialNode":
+                    idleSprite = MapManager.Instance.InitialNodeSprite;
+                    break;
                 default:
                     Debug.LogWarning($"未知的节点类型: {nodeType}");
                     break;
@@ -110,6 +123,13 @@ public class MouseClickDetector : MonoBehaviour
 
         // 设置点击后的 Sprite
         sr.sprite = clickSprite;
+
+        // 展示节点信息面板
+        if (nodeInfoUI != null)
+        {
+            nodeInfoUI.ShowPanel(nodeType, node.nodeName, node.Id, node.Nid ,node.nodeDescription);
+        }
+
         Debug.Log($"鼠标点击，节点类型: {nodeType}");
     }
 }

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 
@@ -280,9 +282,12 @@ public void AddNode(Node node)
                     SetNodeStyle(roomGO, CombatNodeSprite);
                     break;
             }
-
-            // 设置节点 ID 并添加到图中
+            MapManager.Instance.nodeTypeMap.TryGetValue(node.Id, out string nodeType);
+            // 设置节点 ID ，Nid并添加到图中
             node.SetId(virtualNode.Id);
+            node.Setnodeid(GenerateNodeNumber(node.Id, nodeType));
+            node.SetNodeDescription(GetDescriptionByNid(node.Nid));
+            node.SetNodeName(GetNameByNid(node.Nid));
             instantiatedNodes[virtualNode.Id] = node;
             AddNode(node);
 
@@ -299,6 +304,62 @@ public void AddNode(Node node)
             Node node1 = instantiatedNodes[virtualEdge.Node1Id];
             Node node2 = instantiatedNodes[virtualEdge.Node2Id];
             AddEdge(node1, node2);
+        }
+    }
+
+    public int GenerateNodeNumber(int Id, string nodeType)
+    {
+        // 使用 GameController 的随机种子和节点 ID 初始化随机数生成器
+        System.Random random = new System.Random(GameController.Instance.RandomSeed + Id);
+
+        // 根据节点类型生成不同范围的随机编号
+        switch (nodeType)
+        {
+            case "BossNode":
+                return random.Next(1, 1); 
+            case "CombatNode":
+                return random.Next(2, 2);
+            case "EventNode":
+                return random.Next(3, 3); 
+            case "InitialNode":
+                return random.Next(4, 4); 
+            default:
+                return random.Next(300, 400); // 默认节点范围 300 到 399
+        }
+    }
+    public string GetDescriptionByNid(int Nid)
+    {
+        // 使用 Nid 作为键来分配描述文本
+        switch (Nid)
+        {
+            case 1:
+                return "这是一个初始节点，代表冒险的起点。";
+            case 2:
+                return "这是一个战斗节点，准备迎接挑战！";
+            case 3:
+                return "这是一个事件节点，可能会发生一些有趣的事情。";
+            case 4:
+                return "这是一个Boss节点，最终的考验在这里等待着你。";
+            default:
+                return "这是一个普通节点，没有特别的描述。";
+        }
+    }
+
+    public string GetNameByNid(int Nid)
+    {
+        // 使用 Nid 作为键来分配名称
+        switch (Nid)
+        {
+            case 1:
+                return "初始节点";
+            case 2:
+                return "战斗节点";
+            case 3:
+                return "事件节点";
+            case 4:
+                return "Boss节点";
+            default:
+                return "普通节点";
         }
     }
 }
