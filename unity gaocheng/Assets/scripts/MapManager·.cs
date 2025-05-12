@@ -131,6 +131,10 @@ public void AddNode(Node node)
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.startColor = Color.white;
         lineRenderer.endColor = Color.white;
+
+        // 设置 LineRenderer 的 Sorting Layer 和 Order in Layer
+        lineRenderer.sortingLayerName = "Default"; // 确保与节点的 Sorting Layer 一致
+        lineRenderer.sortingOrder = -1; // 设置为比节点的 SpriteRenderer 更低的层级
     }
 
     private void SetNodeStyle(GameObject nodeObject, Sprite sprite)
@@ -266,6 +270,17 @@ public void AddNode(Node node)
             {
                 case "InitialNode":
                     node = roomGO.AddComponent<InitialNode>();
+                    Pointer pointer = FindObjectOfType<Pointer>();
+                    
+                    if (pointer != null)
+                    {
+                        pointer.SetcurrentNode(node);
+                    }
+                    else
+                    {
+                        Debug.LogError("Pointer instance not found in the scene.");
+                    }
+                    pointer.Initialize(node); // 初始化指针位置
                     SetNodeStyle(roomGO, InitialNodeSprite); // 可为初始节点设置独特样式
                     break;
                 case "BossNode":
@@ -285,7 +300,7 @@ public void AddNode(Node node)
             MapManager.Instance.nodeTypeMap.TryGetValue(node.Id, out string nodeType);
             // 设置节点 ID ，Nid并添加到图中
             node.SetId(virtualNode.Id);
-            node.Setnodeid(GenerateNodeNumber(node.Id, nodeType));
+            node.Setnodeid(GenerateNodeNumber(node.Id, virtualNode.NodeType));
             node.SetNodeDescription(GetDescriptionByNid(node.Nid));
             node.SetNodeName(GetNameByNid(node.Nid));
             instantiatedNodes[virtualNode.Id] = node;
@@ -332,13 +347,13 @@ public void AddNode(Node node)
         // 使用 Nid 作为键来分配描述文本
         switch (Nid)
         {
-            case 1:
+            case 4:
                 return "这是一个初始节点，代表冒险的起点。";
             case 2:
                 return "这是一个战斗节点，准备迎接挑战！";
             case 3:
                 return "这是一个事件节点，可能会发生一些有趣的事情。";
-            case 4:
+            case 1:
                 return "这是一个Boss节点，最终的考验在这里等待着你。";
             default:
                 return "这是一个普通节点，没有特别的描述。";
@@ -350,13 +365,13 @@ public void AddNode(Node node)
         // 使用 Nid 作为键来分配名称
         switch (Nid)
         {
-            case 1:
+            case 4:
                 return "初始节点";
             case 2:
                 return "战斗节点";
             case 3:
                 return "事件节点";
-            case 4:
+            case 1:
                 return "Boss节点";
             default:
                 return "普通节点";

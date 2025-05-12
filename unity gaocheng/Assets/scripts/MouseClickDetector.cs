@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 
 public class MouseClickDetector : MonoBehaviour
@@ -23,7 +24,7 @@ public class MouseClickDetector : MonoBehaviour
         Node node = GetComponent<Node>();
         if (node == null)
         {
-            Debug.LogWarning("未找到 Node 组件");
+            Debug.LogWarning($"未找到 Node 组件，GameObject 名称: {gameObject.name}");
             return;
         }
 
@@ -70,6 +71,11 @@ public class MouseClickDetector : MonoBehaviour
 
     void OnMouseEnter()
     {
+        if (IsPointerOverUI())
+        {
+            Debug.Log("鼠标点击被 UI 遮挡");
+            return; // 如果被 UI 遮挡，直接返回
+        }
         sr.sprite = hoverSprite;
         Debug.Log("鼠标进入");
     }
@@ -82,6 +88,14 @@ public class MouseClickDetector : MonoBehaviour
 
     void OnMouseDown()
     {
+        if (IsPointerOverUI())
+        {
+            Debug.Log("鼠标点击被 UI 遮挡");
+            return; // 如果被 UI 遮挡，直接返回
+        }
+        sr.sprite = hoverSprite;
+        Debug.Log("鼠标进入");
+
         // 获取当前节点
         Node node = GetComponent<Node>();
         if (node == null)
@@ -127,9 +141,24 @@ public class MouseClickDetector : MonoBehaviour
         // 展示节点信息面板
         if (nodeInfoUI != null)
         {
-            nodeInfoUI.ShowPanel(nodeType, node.nodeName, node.Id, node.Nid ,node.nodeDescription);
+
+            nodeInfoUI.ShowPanel(node); // 直接传递 Node 对象
         }
 
         Debug.Log($"鼠标点击，节点类型: {nodeType}");
+        Debug.Log($"Nid: {node.Nid}");
+
+    }
+
+    // 判断鼠标是否点击在 UI 上
+    private bool IsPointerOverUI()
+    {
+        PointerEventData eventData = new PointerEventData(EventSystem.current);
+        eventData.position = Input.mousePosition;
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        return results.Count > 0; // 如果有 UI 被检测到，返回 true
     }
 }
