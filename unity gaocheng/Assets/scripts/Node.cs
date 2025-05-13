@@ -11,6 +11,7 @@ public class Node : MonoBehaviour
 
     public string nodeDescription { get; private set; }
     public string nodeName { get; private set; }
+    public bool IsVisited { get; set; } = false;
 
     // 节点的邻居列表
     private List<Node> neighbors = new List<Node>();

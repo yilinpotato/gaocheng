@@ -46,8 +46,26 @@ public class NodeInfoUI : MonoBehaviour
         confirmButton.onClick.AddListener(() =>
         {
             Debug.Log("确认按钮被点击");
-            pointer.MoveTo(targetNode); // 移动指针到目标节点
-            gameObject.SetActive(false); // 隐藏面板
+            Pointer pointer = FindObjectOfType<Pointer>();
+            if (pointer != null)
+            {
+                pointer.MoveTo(targetNode);
+
+            }
+            targetNode.IsVisited = true; // 标记为已访问
+
+        
+            Debug.Log("确认按钮被点击");
+            Debug.Log($"{targetNode.nodeName} 已经进入，节点nid是 {targetNode.Nid}");
+            // 此处加入事件，战斗场景的启动接口——————————————————————————————————————
+
+            // 立即将节点变暗
+            var sr = targetNode.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                sr.color = new Color(0.5f, 0.5f, 0.5f, 1f);
+            }
+            gameObject.SetActive(false);
         });
 
         cancelButton.onClick.RemoveAllListeners();

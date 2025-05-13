@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -77,12 +78,22 @@ public class MouseClickDetector : MonoBehaviour
             return; // 如果被 UI 遮挡，直接返回
         }
         sr.sprite = hoverSprite;
+        Node node = GetComponent<Node>();
+        if (node != null && node.IsVisited)
+        {
+            sr.color = new Color(0.5f, 0.5f, 0.5f, 1f);
+        }
         Debug.Log("鼠标进入");
     }
 
     void OnMouseExit()
     {
         sr.sprite = idleSprite;
+        Node node = GetComponent<Node>();
+        if (node != null && node.IsVisited)
+        {
+            sr.color = new Color(0.5f, 0.5f, 0.5f, 1f);
+        }
         Debug.Log("鼠标离开");
     }
 
@@ -94,10 +105,15 @@ public class MouseClickDetector : MonoBehaviour
             return; // 如果被 UI 遮挡，直接返回
         }
         sr.sprite = hoverSprite;
+
         Debug.Log("鼠标进入");
 
         // 获取当前节点
         Node node = GetComponent<Node>();
+        if (node != null && node.IsVisited)
+        {
+            sr.color = new Color(0.5f, 0.5f, 0.5f, 1f);
+        }
         if (node == null)
         {
             Debug.LogWarning("未找到 Node 组件");
@@ -107,36 +123,22 @@ public class MouseClickDetector : MonoBehaviour
         // 获取节点 ID
         int nodeId = node.Id;
 
-        // 从映射表中获取节点类型
-        if (MapManager.Instance.nodeTypeMap.TryGetValue(nodeId, out string nodeType))
-        {
-            // 根据节点类型设置 idleSprite
-            switch (nodeType)
-            {
-                case "BossNode":
-                    idleSprite = MapManager.Instance.BossNodeSprite;
-                    break;
-                case "CombatNode":
-                    idleSprite = MapManager.Instance.CombatNodeSprite;
-                    break;
-                case "EventNode":
-                    idleSprite = MapManager.Instance.EventNodeSprite;
-                    break;
-                case "InitialNode":
-                    idleSprite = MapManager.Instance.InitialNodeSprite;
-                    break;
-                default:
-                    Debug.LogWarning($"未知的节点类型: {nodeType}");
-                    break;
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"节点 ID {nodeId} 未在映射表中找到");
-        }
 
         // 设置点击后的 Sprite
         sr.sprite = clickSprite;
+
+
+
+        // 已访问则直接移动指针
+        if (node.IsVisited)
+        {
+            Pointer pointer = FindObjectOfType<Pointer>();
+            if (pointer != null)
+            {
+                pointer.MoveTo(node);
+            }
+            return;
+        }
 
         // 展示节点信息面板
         if (nodeInfoUI != null)
@@ -145,8 +147,7 @@ public class MouseClickDetector : MonoBehaviour
             nodeInfoUI.ShowPanel(node); // 直接传递 Node 对象
         }
 
-        Debug.Log($"鼠标点击，节点类型: {nodeType}");
-        Debug.Log($"Nid: {node.Nid}");
+
 
     }
 
