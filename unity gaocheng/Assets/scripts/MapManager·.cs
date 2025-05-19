@@ -22,7 +22,7 @@ public class MapManager : MonoBehaviour
     private Dictionary<Node, List<Node>> graph = new Dictionary<Node, List<Node>>();
 
     // 为不同节点类型指定图案
-    public Sprite InitialNodeSprite;
+    public Sprite  InitialNodeSprite;
     public Sprite CombatNodeSprite;
     public Sprite EventNodeSprite;
     public Sprite BossNodeSprite;
@@ -114,6 +114,7 @@ public void AddNode(Node node)
 
         return true; // 位置有效
     }
+    public Material ropeMaterial;
     private void DrawEdge(Vector3 start, Vector3 end)
     {
         // 创建一个空的 GameObject 用于存放 LineRenderer
@@ -128,9 +129,10 @@ public void AddNode(Node node)
         lineRenderer.SetPosition(1, end);   // 终点
 
         // 设置线条的材质和颜色
-        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-        lineRenderer.startColor = Color.white;
-        lineRenderer.endColor = Color.white;
+        lineRenderer.material = ropeMaterial;
+        lineRenderer.textureMode = LineTextureMode.Tile;
+        float lineLength = Vector3.Distance(start, end);
+        lineRenderer.material.mainTextureScale = new Vector2(lineLength / 2, 1);
 
         // 设置 LineRenderer 的 Sorting Layer 和 Order in Layer
         lineRenderer.sortingLayerName = "Default"; // 确保与节点的 Sorting Layer 一致
