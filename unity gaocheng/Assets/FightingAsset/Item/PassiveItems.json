@@ -1,0 +1,83 @@
+[
+    {
+      "itemName": "血之契约",
+      "type": "Passive",
+      "description": "你与恶魔签订了契约，力量提升但略感虚弱。",
+      "healthBoost": -1.0,
+      "speedBoost": 0.0,
+      "damageBoost": 0.25
+    },
+    {
+      "itemName": "速靴",
+      "type": "Passive",
+      "description": "一双奇怪的靴子，让你行动更加敏捷。",
+      "healthBoost": 0.0,
+      "speedBoost": 0.3,
+      "damageBoost": 0.0
+    },
+    {
+      "itemName": "堕落之心",
+      "type": "Passive",
+      "description": "你的心逐渐黑化，换来毁灭性的力量。",
+      "healthBoost": -0.5,
+      "speedBoost": 0.0,
+      "damageBoost": 0.4
+    },
+    {
+      "itemName": "神圣果实",
+      "type": "Passive",
+      "description": "一口咬下去，感受到神圣的祝福。",
+      "healthBoost": 2.0,
+      "speedBoost": 0.0,
+      "damageBoost": 0.1
+    },
+    {
+      "itemName": "灵魂发条",
+      "type": "Passive",
+      "description": "你的身体仿佛被发条驱动，速度大增。",
+      "healthBoost": 0.0,
+      "speedBoost": 0.5,
+      "damageBoost": 0.0
+    },
+    {
+      "itemName": "爆裂脑浆",
+      "type": "Passive",
+      "description": "虽然有点恶心，但你感到前所未有的力量。",
+      "healthBoost": 1.0,
+      "speedBoost": -0.1,
+      "damageBoost": 0.3
+    },
+    {
+      "itemName": "断裂之镜",
+      "type": "Passive",
+      "description": "镜子的碎片折射出你的另一面，力量与速度并存。",
+      "healthBoost": 0.0,
+      "speedBoost": 0.15,
+      "damageBoost": 0.15
+    },
+    {
+      "itemName": "未知的胚胎",
+      "type": "Passive",
+      "description": "一种奇怪的生物住进了你身体……你变得更强了。",
+      "healthBoost": 1.0,
+      "speedBoost": 0.1,
+      "damageBoost": 0.2
+    },
+    {
+      "itemName": "腐烂翅膀",
+      "type": "Passive",
+      "description": "这些翅膀看起来腐朽，但带来了惊人的速度。",
+      "healthBoost": -0.5,
+      "speedBoost": 0.4,
+      "damageBoost": 0.1
+    },
+    {
+      "itemName": "纯白心脏",
+      "type": "Passive",
+      "description": "纯净的能量注入体内，感觉像重获新生。",
+      "healthBoost": 3.0,
+      "speedBoost": 0.0,
+      "damageBoost": 0.0
+    }
+  ]
+  
