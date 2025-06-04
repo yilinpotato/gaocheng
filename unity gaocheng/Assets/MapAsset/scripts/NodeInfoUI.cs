@@ -19,6 +19,9 @@ public class NodeInfoUI : MonoBehaviour
 
     private Pointer pointer; // 指针对象引用
 
+
+
+
     void Start()
     {
         // 初始隐藏面板
@@ -68,6 +71,10 @@ public class NodeInfoUI : MonoBehaviour
             CombatNode combatNode = targetNode as CombatNode;
             if (combatNode != null)
             {
+                Debug.Log($"正在加载场景: {sceneToLoad}");
+                // 准备进入战斗，保存地图状态
+                MapManager.Instance.PrepareForBattle();
+                SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
                 combatNode.StartCombat();
                 sceneToLoad = CombatSceneName;
             }
@@ -111,4 +118,5 @@ public class NodeInfoUI : MonoBehaviour
             gameObject.SetActive(false); // 隐藏面板
         });
     }
+
 }

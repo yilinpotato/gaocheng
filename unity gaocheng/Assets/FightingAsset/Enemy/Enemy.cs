@@ -2,12 +2,12 @@ using UnityEngine;
 using System.Collections;
 public abstract class Enemy : Entity
 {
-    [Header("敌人基础设置")]
-    [SerializeField] protected EnemyData data;          // ScriptableObject配置
-    [SerializeField] protected LayerMask playerLayer;   // 玩家层级
-    protected Transform player;                         // 玩家引用
-    protected EnemyState currentState;                  // 当前AI状态
-    protected BattleNode battleNode;                   // 改为protected以允许子类访问
+    [Header("敌人基础属性")]
+    [SerializeField] protected EnemyData data;
+    [SerializeField] protected LayerMask playerLayer;
+    protected Transform player;
+    protected EnemyState currentState;
+    protected BattleNode battleNode;
 
     public virtual void SetBattleNode(BattleNode node)
     {
@@ -25,6 +25,29 @@ public abstract class Enemy : Entity
             attackPower = data.attackDamage;
             currentHP = maxHP;
         }
+
+        // 为死亡事件添加处理方法
+        OnDeath.AddListener(HandleEnemyDeath);
+    }
+
+    // 添加的死亡处理方法
+    private void HandleEnemyDeath()
+    {
+        if (battleNode != null)
+        {
+            Debug.Log("敌人死亡，准备结束战斗...");
+            // 延迟一点时间再结束战斗，给死亡动画一些播放时间
+            StartCoroutine(EndBattleAfterDelay(2.0f));
+        }
+    }
+
+    private IEnumerator EndBattleAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (battleNode != null)
+        {
+            battleNode.EndBattle();
+        }
     }
 
     protected override void Start()
@@ -39,7 +62,7 @@ public abstract class Enemy : Entity
         UpdateAIState();
     }
 
-    // AI状态机核心逻辑
+    // AI状态更新逻辑
     protected abstract void UpdateAIState();
 
     protected override void Die()
@@ -47,8 +70,9 @@ public abstract class Enemy : Entity
         base.Die();
         StopAllCoroutines();
     }
-// 发射弹幕的通用方法
-protected Projectile ShootProjectile(Vector2 direction)
+
+    // 发射弹幕通用方法
+    protected Projectile ShootProjectile(Vector2 direction)
     {
         GameObject bulletObj = BulletManager.Instance.GetBullet(
           BulletType.Enemy,
@@ -61,5 +85,4 @@ protected Projectile ShootProjectile(Vector2 direction)
         }
         return projectile;
     }
-
 }

@@ -30,10 +30,15 @@ public class GameController : MonoBehaviour
         RandomSeed = GenerateRandomSeed();
         Debug.Log("随机种子: " + RandomSeed);
 
-        // 生成地图
-        mapManager.GenerateMap();
-
-
+        // 只有在地图未生成的情况下才生成地图
+        if (!MapManager.isMapGenerated)
+        {
+            mapManager.GenerateMap();
+        }
+        else
+        {
+            Debug.Log("地图已存在，不再重新生成");
+        }
     }
 
     // Update is called once per frame  
