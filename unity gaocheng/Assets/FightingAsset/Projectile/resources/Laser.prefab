@@ -161,7 +161,7 @@ BoxCollider2D:
     drawMode: 2
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.0001, y: 0.0001}
+  m_Size: {x: 0.32, y: 10000}
   m_EdgeRadius: 0
 --- !u!114 &408758831415389320
 MonoBehaviour:
@@ -177,7 +177,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 20
   duration: 1
-  length: 10
+  length: 1000
   hitLayer:
     serializedVersion: 2
     m_Bits: 256

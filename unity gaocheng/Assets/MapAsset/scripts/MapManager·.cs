@@ -8,7 +8,6 @@ using UnityEngine;
 public class MapManager : MonoBehaviour
 {
     public GameObject RoomPrefeb;
-
     public static MapManager Instance { get; private set; }
 
     // 用于生成唯一的节点 ID
@@ -137,8 +136,8 @@ public void AddNode(Node node)
         // 设置 LineRenderer 的 Sorting Layer 和 Order in Layer
         lineRenderer.sortingLayerName = "Default"; // 确保与节点的 Sorting Layer 一致
         lineRenderer.sortingOrder = -1; // 设置为比节点的 SpriteRenderer 更低的层级
+        
     }
-
     private void SetNodeStyle(GameObject nodeObject, Sprite sprite)
     {
         SpriteRenderer spriteRenderer = nodeObject.GetComponent<SpriteRenderer>();
@@ -295,7 +294,8 @@ public void AddNode(Node node)
                     break;
                 case "CombatNode":
                 default:
-                    node = roomGO.AddComponent<CombatNode>();
+                    CombatNode combatNode = roomGO.AddComponent<CombatNode>();
+                    node = combatNode;
                     SetNodeStyle(roomGO, CombatNodeSprite);
                     break;
             }

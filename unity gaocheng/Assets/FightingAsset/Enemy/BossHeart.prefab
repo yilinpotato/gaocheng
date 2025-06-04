@@ -32,7 +32,9 @@ Transform:
   m_LocalPosition: {x: -0.73, y: 3.85, z: -4.2123165}
   m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 6449489089375098164}
+  - {fileID: 3999409037565816549}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4162560805680012373
@@ -60,22 +62,31 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 256
-  projectilePrefab: {fileID: 8694216735614466543, guid: 0a824a91ade91fd4bad70b53fb2bab6a, type: 3}
   circleDuration: 3
   circleWaveCount: 3
-  spiralDuration: 5
-  laserDuration: 1.5
+  spiralDuration: 4
+  starBurstDuration: 6
   phase1Patterns: 0000000001000000
-  phase2Patterns: 000000000100000002000000
-  phase2Threshold: 0.6
-  muzzlePoints: []
+  phase2Patterns: 0100000002000000
+  phase2Threshold: 0.5
+  isPhase2: 0
+  muzzlePoints:
+  - {fileID: 6449489089375098164}
+  - {fileID: 3999409037565816549}
   attackInterval: 1
+  bulletSpeed: 5
   circleBulletCount: 17
-  circleSpeed: 5
   spiralArmCount: 4
-  spiralRotateSpeed: 60
-  laserPrefab: {fileID: 8130885075139848017, guid: d76bd26a04e6ec64e8e58d87f7332e97, type: 3}
-  hurtColor: {r: 1, g: 1, b: 1, a: 1}
+  spiralRotateSpeed: 120
+  spiralFireRate: 0.15
+  innerRingBullets: 12
+  outerRingBullets: 16
+  ringRotationSpeed: 90
+  starBursts: 4
+  burstCooldown: 0.5
+  starBulletSpeed: 7
+  ringDistance: 1.5
+  hurtColor: {r: 0.7056604, g: 0.6944837, b: 0.09453187, a: 1}
   hurtDuration: 0.1
 --- !u!50 &7731571841172144548
 Rigidbody2D:
@@ -195,3 +206,65 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0.020557404, y: -0.26210654}
   m_Radius: 0.24817169
+--- !u!1 &6646103690754325542
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6449489089375098164}
+  m_Layer: 9
+  m_Name: shootpoint1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6449489089375098164
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6646103690754325542}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.2, y: -0.4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1674168503943399967}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7777477992096257425
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3999409037565816549}
+  m_Layer: 9
+  m_Name: shottpoint2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3999409037565816549
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7777477992096257425}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.2, y: -0.4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1674168503943399967}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -1,18 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-
-public class CombatNode : Node
+public class CombatNode : BattleNode
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
+    // 指定战斗场景名称
+    protected override string BattleSceneName => "BattleScene";
+    public void StartCombat()
     {
-        
+        StartBattle();
+    }
+    public void EndCombat()
+    {
+        EndBattle();
     }
 }

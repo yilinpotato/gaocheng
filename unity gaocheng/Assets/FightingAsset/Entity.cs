@@ -20,6 +20,7 @@ public abstract class Entity : MonoBehaviour
     protected float currentHP;      // 当前生命值
     protected bool isDead;         // 死亡状态标记
 
+    private bool hasRevive;
     //===================== 事件定义 =====================
     public UnityEvent<float> OnDamageTaken;     // 受伤事件（传递伤害值）
     public UnityEvent OnDeath;                 // 死亡事件
@@ -51,6 +52,11 @@ public abstract class Entity : MonoBehaviour
     {
         moveSpeed = value;
     }
+    public void SetRevive(bool value)
+    {
+        hasRevive = value;
+    }
+
     public virtual void LoadFromData(EnemyData data)
     {
         SetMaxHP(data.baseHP);

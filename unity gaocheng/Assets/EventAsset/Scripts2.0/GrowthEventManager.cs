@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-
 
 public class GrowthEventManager : MonoBehaviour
 {
@@ -24,7 +21,7 @@ public class GrowthEventManager : MonoBehaviour
         uiController.ShowEventUI(OnOptionSelected);
     }
 
-    // 回调，玩家选择了某个选项
+    // 回调：玩家选择选项
     private void OnOptionSelected(int option)
     {
         ResetBuffs();
@@ -43,20 +40,22 @@ public class GrowthEventManager : MonoBehaviour
         }
 
         Debug.Log("选择了选项：" + option);
-
-        // 关闭UI
         uiController.HideEventUI();
     }
 
-    // 在下一局开始时调用，应用buff
+    // 应用下一局的buff
     public void ApplyBuffsForNextRound()
     {
-        playerStats.currentHealth = playerStats.baseHealth * nextHealthMultiplier;
-        playerStats.currentAttack = playerStats.baseAttack * nextAttackMultiplier;
-        playerStats.hasRevive = nextHasRevive;
+        // 设置最大生命值并更新当前生命值
+        playerStats.MaxHP *= nextHealthMultiplier;
+        playerStats.CurrentHP = playerStats.MaxHP; // 重置为满血
+
+        // 设置攻击力
+        playerStats.AttackPower *= nextAttackMultiplier;
+
     }
 
-    // 每局结束后重置buff（除非下一局还没开始）
+    // 重置buff
     public void ResetBuffs()
     {
         nextHealthMultiplier = 1f;

@@ -1,18 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class BossNode : CombatNode
+public class BossNode : BattleNode
 {
-    // Start is called before the first frame update
-    void Start()
+    //指定战斗场景名称
+    protected override string BattleSceneName => "BossScene";
+
+    public void StartBossBattle()
     {
-        
+        StartBattle();
+    }
+    public void EndBossBattle()
+    {
+        EndBattle();
     }
 
-    // Update is called once per frame
-    void Update()
+    protected override void BattleCompleted()
     {
-        
+        base.BattleCompleted();
+        Debug.Log("恭喜！你击败了关底BOSS！");
     }
 }

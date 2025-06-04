@@ -14,7 +14,7 @@ public class Player : Entity
     private PlayerShooting shooting;
 
     [Header("房间边界")]
-    [SerializeField] private GameObject room; // 拖入 Room 游戏对象
+    public GameObject room; // 拖入 Room 游戏对象
 
     private float minX, maxX, minY, maxY;
 
@@ -152,31 +152,57 @@ public class Player : Entity
     }
     private void InitializeRoomBounds()
     {
-        Collider2D roomCollider = room.GetComponent<Collider2D>();
-        if (roomCollider != null)
+        if (room == null)
         {
-            Bounds bounds = roomCollider.bounds;
-            // 根据角色碰撞器大小调整边界（假设角色碰撞器半径为0.5）
-            float playerHalfWidth = 0.5f;
-            float playerHalfHeight = 0.5f;
-            minX = bounds.min.x + playerHalfWidth;
-            maxX = bounds.max.x - playerHalfWidth;
-            minY = bounds.min.y + playerHalfHeight;
-            maxY = bounds.max.y - playerHalfHeight;
+            Debug.LogError("房间对象未设置！");
+            return;
+        }
+
+        // 使用渲染器边界而非碰撞器边界（更直观）
+        Renderer roomRenderer = room.GetComponent<Renderer>();
+        if (roomRenderer != null)
+        {
+            Bounds bounds = roomRenderer.bounds;
+
+            // 获取玩家的渲染器边界
+            Renderer playerRenderer = GetComponent<Renderer>();
+            Bounds playerBounds = playerRenderer != null ? playerRenderer.bounds : new Bounds(transform.position, Vector3.one);
+
+            // 计算边界时考虑玩家尺寸
+            minX = bounds.min.x + playerBounds.extents.x;
+            maxX = bounds.max.x - playerBounds.extents.x;
+            minY = bounds.min.y + playerBounds.extents.y;
+            maxY = bounds.max.y - playerBounds.extents.y;
+
+            Debug.Log($"房间边界: X({minX},{maxX}), Y({minY},{maxY})");
         }
         else
         {
-            Debug.LogError("Room 对象未找到 Collider2D 组件！");
+            Debug.LogError("Room对象未找到Renderer组件！");
         }
     }
+
     private void ClampPosition()
     {
-        Vector2 clampedPosition = rb.position;
-        clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX, maxX);
-        clampedPosition.y = Mathf.Clamp(clampedPosition.y, minY, maxY);
-        rb.position = clampedPosition;
+        if (minX >= maxX || minY >= maxY)
+        {
+            // 边界无效时跳过限制
+            return;
+        }
+
+        Vector2 currentPos = transform.position;
+        Vector2 clampedPos = new Vector2(
+            Mathf.Clamp(currentPos.x, minX, maxX),
+            Mathf.Clamp(currentPos.y, minY, maxY)
+        );
+
+        // 只在位置越界时应用限制（避免每帧都强制更新位置）
+        if (currentPos != clampedPos)
+        {
+            transform.position = clampedPos;
+        }
     }
-private IEnumerator PerformDash(PlayerStats.SkillData skill)
+    private IEnumerator PerformDash(PlayerStats.SkillData skill)
     {
         isDashing = true;
         skill.currentCooldown = skill.cooldown;
@@ -191,7 +217,6 @@ private IEnumerator PerformDash(PlayerStats.SkillData skill)
         yield return new WaitForSeconds(0.2f);  // 停顿后恢复控制
         isDashing = false;
     }
-    // 在Animation Clip导入设置中启用"Loop Time"
     public void ReverseAnimation()
     {
         AnimatorStateInfo stateInfo = bodyAnimator.GetCurrentAnimatorStateInfo(0);

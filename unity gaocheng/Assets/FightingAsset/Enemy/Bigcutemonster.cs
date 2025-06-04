@@ -96,7 +96,7 @@ public class Boss : Enemy
         {
             float angle = startAngle + i * angleStep;
             Vector2 dir = CalculateDirection(angle);
-            ShootProjectile(dir).SetSpeed(GetBulletSpeed(angle)); // 假设Projectile有SetSpeed方法
+            ShootProjectile(dir).SetSpeed(GetBulletSpeed(angle)); 
         }
     }
 

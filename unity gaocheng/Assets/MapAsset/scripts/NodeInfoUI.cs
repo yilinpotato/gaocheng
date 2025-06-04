@@ -58,7 +58,17 @@ public class NodeInfoUI : MonoBehaviour
             Debug.Log("确认按钮被点击");
             Debug.Log($"{targetNode.nodeName} 已经进入，节点nid是 {targetNode.Nid}");
             // 此处加入事件，战斗场景的启动接口——————————————————————————————————————
-
+            CombatNode combatNode = targetNode as CombatNode;
+            if (combatNode != null)
+            {
+                combatNode.StartCombat();
+            }
+            // ======= BOSS节点启动接口 ======= 
+            BossNode bossNode = targetNode as BossNode;
+            if (bossNode != null)
+            {
+                bossNode.StartBossBattle();
+            }
             // 立即将节点变暗
             var sr = targetNode.GetComponent<SpriteRenderer>();
             if (sr != null)

@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
+
+    public string LastMapSceneName { get; set; }
+
     public MapManager mapManager;
 
     public static GameController Instance { get; private set; }
