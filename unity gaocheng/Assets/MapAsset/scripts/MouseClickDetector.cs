@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 
 public class MouseClickDetector : MonoBehaviour
@@ -84,6 +85,7 @@ public class MouseClickDetector : MonoBehaviour
             sr.color = new Color(0.5f, 0.5f, 0.5f, 1f);
         }
         Debug.Log("鼠标进入");
+
     }
 
     void OnMouseExit()
@@ -123,16 +125,13 @@ public class MouseClickDetector : MonoBehaviour
         // 获取节点 ID
         int nodeId = node.Id;
 
-
         // 设置点击后的 Sprite
         sr.sprite = clickSprite;
-
-
 
         // 已访问则直接移动指针
         if (node.IsVisited)
         {
-            Pointer pointer = FindObjectOfType<Pointer>();
+            Pointer pointer = Object.FindFirstObjectByType<Pointer>(); // 替换过时方法
             if (pointer != null)
             {
                 pointer.MoveTo(node);
@@ -143,12 +142,8 @@ public class MouseClickDetector : MonoBehaviour
         // 展示节点信息面板
         if (nodeInfoUI != null)
         {
-
             nodeInfoUI.ShowPanel(node); // 直接传递 Node 对象
         }
-
-
-
     }
 
     // 判断鼠标是否点击在 UI 上

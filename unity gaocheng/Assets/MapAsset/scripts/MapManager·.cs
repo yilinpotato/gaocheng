@@ -271,7 +271,7 @@ public void AddNode(Node node)
             {
                 case "InitialNode":
                     node = roomGO.AddComponent<InitialNode>();
-                    Pointer pointer = FindObjectOfType<Pointer>();
+                    Pointer pointer = Object.FindFirstObjectByType<Pointer>();
                     
                     if (pointer != null)
                     {

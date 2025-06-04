@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class NodeInfoUI : MonoBehaviour
 {
@@ -11,15 +12,20 @@ public class NodeInfoUI : MonoBehaviour
     public Button confirmButton;
     public Button cancelButton;
 
-    private Pointer pointer; // 引用指针对象
+    // 定义场景名称常量
+    private const string CombatSceneName = "BattleScene";
+    private const string BossSceneName = "BossScene";
+    private const string EventSceneName = "EventScene";
+
+    private Pointer pointer; // 指针对象引用
 
     void Start()
     {
-        // 隐藏面板
+        // 初始隐藏面板
         gameObject.SetActive(false);
 
         // 获取 Pointer 脚本
-        pointer = FindObjectOfType<Pointer>();
+        pointer = FindFirstObjectByType<Pointer>();
     }
 
     public void ShowPanel(Node targetNode)
@@ -31,11 +37,11 @@ public class NodeInfoUI : MonoBehaviour
         nodeNidText.text = $"编号(Nid): {targetNode.Nid}";
         nodeDescriptionText.text = $"描述: {targetNode.nodeDescription}";
 
-        // 检查是否与指针当前指向的节点相连
+        // 检查是否与指针当前指向的节点相邻
         Node currentNode = pointer.GetCurrentNode();
         bool isConnected = currentNode != null && currentNode.IsNeighbor(targetNode);
 
-        // 显示或隐藏确认按钮
+        // 只显示可连接节点的确认按钮
         confirmButton.gameObject.SetActive(isConnected);
 
         // 显示面板
@@ -46,35 +52,55 @@ public class NodeInfoUI : MonoBehaviour
         confirmButton.onClick.AddListener(() =>
         {
             Debug.Log("确认按钮被点击");
-            Pointer pointer = FindObjectOfType<Pointer>();
+            Pointer pointer = FindFirstObjectByType<Pointer>();
             if (pointer != null)
             {
                 pointer.MoveTo(targetNode);
-
             }
             targetNode.IsVisited = true; // 标记为已访问
 
-        
-            Debug.Log("确认按钮被点击");
-            Debug.Log($"{targetNode.nodeName} 已经进入，节点nid是 {targetNode.Nid}");
-            // 此处加入事件，战斗场景的启动接口——————————————————————————————————————
+            Debug.Log($"{targetNode.nodeName} 已经进入，节点nid为 {targetNode.Nid}");
+
+            // 判断节点类型，加载相应场景
+            string sceneToLoad = "";
+
+            // 战斗节点处理
             CombatNode combatNode = targetNode as CombatNode;
             if (combatNode != null)
             {
                 combatNode.StartCombat();
+                sceneToLoad = CombatSceneName;
             }
-            // ======= BOSS节点启动接口 ======= 
+
+            // BOSS节点处理
             BossNode bossNode = targetNode as BossNode;
             if (bossNode != null)
             {
                 bossNode.StartBossBattle();
+                sceneToLoad = BossSceneName;
             }
-            // 立即将节点变暗
+
+            // 事件节点处理
+            EventNode eventNode = targetNode as EventNode;
+            if (eventNode != null)
+            {
+                sceneToLoad = EventSceneName;
+            }
+
+            // 加载对应的场景
+            if (!string.IsNullOrEmpty(sceneToLoad))
+            {
+                Debug.Log($"正在加载场景: {sceneToLoad}");
+                SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
+            }
+
+            // 设置节点变暗
             var sr = targetNode.GetComponent<SpriteRenderer>();
             if (sr != null)
             {
                 sr.color = new Color(0.5f, 0.5f, 0.5f, 1f);
             }
+
             gameObject.SetActive(false);
         });
 
