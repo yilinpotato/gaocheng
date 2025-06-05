@@ -82,7 +82,7 @@ public class GameController : MonoBehaviour
     void Update()
     {
         // 添加调试信息
-        if (Time.frameCount % 300 == 0) // 每5秒左右显示一次状态
+        if (Time.frameCount % 600 == 0) // 每10秒左右显示一次状态
         {
             Debug.Log($"[自动保存状态] enableAutoSave: {enableAutoSave}, currentPlayerData: {(currentPlayerData != null ? "存在" : "null")}, 计时器: {autoSaveTimer:F1}秒");
         }
