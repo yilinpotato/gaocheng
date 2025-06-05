@@ -18,6 +18,15 @@ public class BattleSceneController : MonoBehaviour
         }
 
         // 尝试获取战斗节点并设置关联
+        // 如果玩家预制体存在，则实例化
+        if (playerPrefab != null)
+        {
+            GameObject playerObj = Instantiate(playerPrefab, playerSpawn.position, Quaternion.identity);
+            if (!playerObj.activeSelf)
+            {
+                playerObj.SetActive(true);
+            }
+        }
         Enemy enemy = enemyObj.GetComponent<Enemy>();
         if (enemy != null)
         {

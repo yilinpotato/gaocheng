@@ -5,7 +5,7 @@ public class EventSceneManager : MonoBehaviour
     public GameObject growthUI;
     public GameObject rewardUI;
 
-    public void InitializeEvent()
+    void Start()
     {
         Debug.Log("事件场景初始化");
         Debug.Log("当前事件类型: " + EventSceneData.currentEventType);
@@ -14,26 +14,20 @@ public class EventSceneManager : MonoBehaviour
 
     void ShowEventUI(EventType type)
     {
-        // 隐藏所有UI
-        springUI?.SetActive(false);
-        growthUI?.SetActive(false);
-        rewardUI?.SetActive(false);
 
-        switch (type)
-        {
-            case EventType.Spring:
-                springUI?.SetActive(true);
-                springUI?.GetComponent<SpringEventUI>()?.Show();
-                break;
-            case EventType.Growth:
-                growthUI?.SetActive(true);
-                growthUI?.GetComponent<GrowthEventManager>()?.ShowGrowthEvent();
-                break;
-            case EventType.CombatReward:
-                rewardUI?.SetActive(true);
-                rewardUI?.GetComponent<BattleEventUI>()?.Show(EventSceneData.combatNode);
-                break;
-        }
+    
+            growthUI?.SetActive(true);
+            GrowthEventManager growthManager = growthUI?.GetComponent<GrowthEventManager>();
+            if (growthManager != null)
+            {
+                growthManager.ShowGrowthEvent();
+                Debug.Log("显示成长事件UI");
+            }
+            else
+            {
+                Debug.LogError("找不到 GrowthEventManager 组件!");
+            }
+       
     }
 
     // 统一的事件结束方法

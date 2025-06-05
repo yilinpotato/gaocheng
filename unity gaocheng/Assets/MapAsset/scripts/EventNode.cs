@@ -17,30 +17,7 @@ public class EventNode : Node
         Debug.Log($"事件类型被设定为: {eventType}");
     }
 
-    public void EnterEventScene()
-    {
 
-        SceneManager.LoadScene(EventSceneName, LoadSceneMode.Additive);
-        SceneManager.sceneLoaded += OnEventSceneLoaded;
-        SceneHider.SetSceneActive("MapScene", false);
-        Debug.Log($"进入事件场景: {EventSceneName}");
-    }
-
-    private void OnEventSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        if (scene.name == EventSceneName)
-        {
-            SceneManager.sceneLoaded -= OnEventSceneLoaded;
-            SceneManager.SetActiveScene(scene);
-
-            // 初始化事件场景
-            EventSceneManager eventManager = FindObjectOfType<EventSceneManager>();
-            if (eventManager != null)
-            {
-                eventManager.InitializeEvent();
-            }
-        }
-    }
 
     public void EndEvent()
     {
