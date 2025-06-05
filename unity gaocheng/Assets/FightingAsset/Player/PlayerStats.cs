@@ -47,7 +47,11 @@ public class PlayerStats : MonoBehaviour
     // 计算属性的公共接口
     public float DashForce => dashForce;
     public float InvincibleDuration => invincibleDuration;
-    public float AttackSpeed => attackSpeed;  // 攻击速度
+    public float AttackSpeed
+    {
+        get => attackSpeed;
+        set => attackSpeed = value;
+    }// 攻击速度
     public float ShotSpread => shotSpread;    // 射击扩散
     public float ShotSpeed => shotSpeed;      // 子弹速度
     public float CurrentAttackCooldown => 1f / Mathf.Max(attackSpeed, 0.1f);//子弹冷却

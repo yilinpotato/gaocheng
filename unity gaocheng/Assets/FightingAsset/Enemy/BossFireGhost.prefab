@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 3150677797733765381}
   m_Layer: 9
   m_Name: BossFireGhost
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -60,7 +60,6 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 0
-  projectilePrefab: {fileID: 8694216735614466543, guid: 0a824a91ade91fd4bad70b53fb2bab6a, type: 3}
   fanBulletCount: 7
   fanSpreadAngle: 90
   fanAttackInterval: 3
