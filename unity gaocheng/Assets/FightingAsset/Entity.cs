@@ -130,7 +130,20 @@ public abstract class Entity : MonoBehaviour
         // 通知事件系统
         EventBus.Publish(new DeathEvent(this));
 
+        // 新增：尝试调用 forTestButton 中的方法来切换场景
+        forTestButton buttonController = FindObjectOfType<forTestButton>();
+        if (buttonController != null)
+        {
+            // 调用正确的方法名：ReturnToMapScene
+            buttonController.ReturnToMapScene();
+        }
+        else
+        {
+            Debug.LogWarning("Die: ForTestButton instance not found in the scene. Cannot switch to map scene.");
+        }
+
         // 默认行为：禁用游戏对象
+        // 如果场景立即切换，这行代码可能不再必要，或者其行为需要根据场景切换逻辑调整
         gameObject.SetActive(false);
     }
 

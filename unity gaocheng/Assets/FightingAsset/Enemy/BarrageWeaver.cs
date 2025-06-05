@@ -76,7 +76,16 @@ public class BarrageWeaver : Enemy
 
     public override void TakeDamage(float damage)
     {
+        // 如果已经死亡，不再执行后续逻辑
+        if (isDead) return;
+
+        // 原有的 TakeDamage 逻辑
         base.TakeDamage(damage);
+
+        // 如果此时已经死亡（被上面的 base.TakeDamage 杀死），就不要再启动协程
+        if (isDead) return;
+
+        // 启动协程的代码...
         StartCoroutine(HurtEffect());
     }
 

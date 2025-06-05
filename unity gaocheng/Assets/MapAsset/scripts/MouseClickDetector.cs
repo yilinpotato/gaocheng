@@ -15,7 +15,7 @@ public class MouseClickDetector : MonoBehaviour
     private SpriteRenderer sr;
 
     // 引用节点信息面板
-    public GameObject nodeInfoPanel; // 面板预制体
+    // public GameObject nodeInfoPanel; // 面板预制体
     private NodeInfoUI nodeInfoUI;   // 面板的脚本组件
 
     void Start()
@@ -34,7 +34,7 @@ public class MouseClickDetector : MonoBehaviour
         int nodeId = node.Id;
 
         // 从映射表中获取节点类型
-        if (MapManager.Instance.nodeTypeMap.TryGetValue(nodeId, out string nodeType))
+        if (MapManager.Instance != null && MapManager.Instance.nodeTypeMap.TryGetValue(nodeId, out string nodeType))
         {
             // 根据节点类型设置 idleSprite
             switch (nodeType)
@@ -58,17 +58,34 @@ public class MouseClickDetector : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"节点 ID {nodeId} 未在映射表中找到");
+            if (MapManager.Instance == null)
+            {
+                Debug.LogError("MouseClickDetector: MapManager.Instance is null!");
+            }
+            else
+            {
+                Debug.LogWarning($"节点 ID {nodeId} 未在映射表中找到");
+            }
         }
 
         // 设置初始显示的 Sprite
-        sr.sprite = idleSprite;
-
-        // 获取面板的脚本组件
-        if (nodeInfoPanel != null)
+        if (sr != null && idleSprite != null)
         {
-            nodeInfoUI = nodeInfoPanel.GetComponent<NodeInfoUI>();
+            sr.sprite = idleSprite;
         }
+        else
+        {
+            if(sr == null) Debug.LogWarning($"MouseClickDetector on {gameObject.name}: SpriteRenderer is null.");
+            if(idleSprite == null) Debug.LogWarning($"MouseClickDetector on {gameObject.name}: idleSprite is null, nodeType might be missing or incorrect.");
+        }
+
+        // 获取面板的脚本组件 - 改为动态查找
+        nodeInfoUI = NodeInfoUI.Instance; // 通过单例获取引用
+        if (nodeInfoUI == null)
+        {
+            Debug.LogError($"MouseClickDetector on {gameObject.name}: 未能获取到 NodeInfoUI.Instance！");
+        }
+        // 不再需要 public GameObject nodeInfoPanel; 字段，可以移除或注释掉
     }
 
     void OnMouseEnter()

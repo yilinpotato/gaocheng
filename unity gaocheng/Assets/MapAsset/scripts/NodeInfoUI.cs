@@ -4,6 +4,8 @@ using UnityEngine.SceneManagement;
 
 public class NodeInfoUI : MonoBehaviour
 {
+    public static NodeInfoUI Instance { get; private set; }
+
     public Text nodeTypeText;
     public Text nodeNameText;
     public Text nodeIdText;
@@ -19,13 +21,24 @@ public class NodeInfoUI : MonoBehaviour
 
     private Pointer pointer; // 指针对象引用
 
-
-
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject); // 确保只有一个实例
+            return;
+        }
+        // 不要在这里立即 SetActive(false) 如果其他脚本的 Start 需要找到它
+    }
 
     void Start()
     {
         // 初始隐藏面板
-        gameObject.SetActive(false);
+        gameObject.SetActive(false); // 面板默认隐藏
 
         // 获取 Pointer 脚本
         pointer = FindFirstObjectByType<Pointer>();
