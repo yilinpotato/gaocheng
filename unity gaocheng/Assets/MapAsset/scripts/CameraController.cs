@@ -12,7 +12,7 @@ public class CameraController : MonoBehaviour
     public Vector2 maxBounds; // 拖动的最大边界
 
     private Vector3 dragOrigin; // 记录鼠标拖动的起始位置
-    private bool isDragging = false; // 标记是否正在拖动
+
 
     void Update()
     {
@@ -37,7 +37,7 @@ public class CameraController : MonoBehaviour
         if (Input.GetMouseButtonDown(0)) // 左键
         {
             dragOrigin = Input.mousePosition;
-            isDragging = false; // 初始化为未拖动
+      
         }
 
         // 鼠标左键拖动时移动摄像头
@@ -54,14 +54,14 @@ public class CameraController : MonoBehaviour
 
                 transform.position = newPosition;
                 dragOrigin = Input.mousePosition;
-                isDragging = true; // 标记为拖动
+  
             }
         }
 
         // 鼠标左键抬起时重置拖动状态
         if (Input.GetMouseButtonUp(0))
         {
-            isDragging = false;
+
         }
     }
 }

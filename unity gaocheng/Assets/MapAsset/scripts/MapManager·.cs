@@ -52,6 +52,7 @@ public class MapManager : MonoBehaviour
     private List<VirtualEdge> serializedEdges = new List<VirtualEdge>();
 
     public Material ropeMaterial;
+    private const string EdgeTag = "Edge";
 
     private void Awake()
     {
@@ -60,6 +61,16 @@ public class MapManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject); // 保持MapManager在场景切换时不被销毁
             SceneManager.sceneLoaded += OnSceneLoaded; // 添加场景加载回调
+            
+            // 确保列表已初始化
+            if (serializedNodes == null) serializedNodes = new List<SerializedNode>();
+            if (serializedEdges == null) serializedEdges = new List<VirtualEdge>();
+            if (nodeObjects == null) nodeObjects = new Dictionary<int, GameObject>();
+            if (edgeObjects == null) edgeObjects = new List<GameObject>();
+            if (nodeTypeMap == null) nodeTypeMap = new Dictionary<int, string>();
+            if (virtualNodes == null) virtualNodes = new List<VirtualNode>();
+            if (virtualEdges == null) virtualEdges = new List<VirtualEdge>();
+            if (graph == null) graph = new Dictionary<Node, List<Node>>();
         }
         else if (Instance != this)
         {
@@ -70,12 +81,28 @@ public class MapManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // 如果加载的是地图场景且是从战斗返回
-        if (scene.name == "MapScene" && isReturningFromBattle)
+        // 如果加载的是地图场景
+        if (scene.name == "MapScene")
         {
-            Debug.Log("检测到加载地图场景，准备恢复节点和边");
-            StartCoroutine(RestoreMapState());
-            isReturningFromBattle = false;
+            Debug.Log("检测到加载地图场景");
+            
+            // 确保只有一个AudioListener
+            EnsureSingleAudioListener();
+            
+            // 如果是从战斗返回或者地图已经生成过，恢复地图状态
+            if (isReturningFromBattle || (isMapGenerated && serializedNodes.Count > 0))
+            {
+                Debug.Log("准备恢复节点和边");
+                StartCoroutine(RestoreMapState());
+                isReturningFromBattle = false;
+            }
+            // 如果地图从未生成过，则生成新地图
+            else if (!isMapGenerated)
+            {
+                Debug.Log("首次进入地图场景，开始生成新地图");
+                // 延迟执行以确保所有组件都已加载
+                StartCoroutine(DelayedGenerateMap());
+            }
         }
     }
 
@@ -84,12 +111,72 @@ public class MapManager : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+    // 添加方法确保只有一个AudioListener
+    private void EnsureSingleAudioListener()
+    {
+        AudioListener[] listeners = Object.FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
+        if (listeners.Length > 1)
+        {
+            Debug.LogWarning($"发现{listeners.Length}个AudioListener，正在移除多余的");
+            
+            // 保留第一个，移除其他的
+            for (int i = 1; i < listeners.Length; i++)
+            {
+                if (listeners[i] != null)
+                {
+                    Destroy(listeners[i]);
+                    Debug.Log($"已移除多余的AudioListener: {listeners[i].gameObject.name}");
+                }
+            }
+        }
+    }
+
+
+
+
+    // 添加新的方法来确保RoomPrefeb已加载
+    private void EnsureRoomPrefabLoaded()
+    {
+        if (RoomPrefeb == null)
+        {
+            // 尝试从Resources加载预制体（需要将预制体放在Resources文件夹下）
+            RoomPrefeb = Resources.Load<GameObject>("Prefabs/RoomPrefeb");
+
+            if (RoomPrefeb == null)
+            {
+                Debug.LogError("无法加载 RoomPrefeb，请确保预制体存在且正确引用！");
+            }
+            else
+            {
+                Debug.Log("成功从Resources重新加载RoomPrefeb");
+            }
+        }
+    }
+
     // 添加恢复地图状态的方法
     private IEnumerator RestoreMapState()
     {
         yield return new WaitForSeconds(0.5f); // 给场景加载更多时间
 
+        // 确保RoomPrefeb已加载
+        EnsureRoomPrefabLoaded();
+
+        // 检查RoomPrefeb是否有效
+        if (RoomPrefeb == null)
+        {
+            Debug.LogError("无法恢复地图：RoomPrefeb为空！");
+            yield break;
+        }
+
         Debug.Log("开始恢复地图状态");
+
+        {
+        yield return new WaitForSeconds(0.5f); // 给场景加载更多时间
+
+        Debug.Log("开始恢复地图状态");
+
+        // 确保只有一个AudioListener
+        EnsureSingleAudioListener();
 
         if (serializedNodes.Count == 0)
         {
@@ -106,17 +193,15 @@ public class MapManager : MonoBehaviour
             }
         }
 
-        // 清理可能存在的旧边
-        foreach (var obj in GameObject.FindGameObjectsWithTag("Edge"))
+        // 清理可能存在的旧边 - 直接从edgeObjects列表清理
+        foreach (var edgeObj in edgeObjects)
         {
-            if (obj != null)
+            if (edgeObj != null)
             {
-                Destroy(obj);
+                Destroy(edgeObj);
             }
         }
-
-        // 等待清理完成
-        yield return new WaitForSeconds(0.2f);
+        edgeObjects.Clear();
 
         // 从序列化数据重新创建节点
         Dictionary<int, Node> reinstantiatedNodes = new Dictionary<int, Node>();
@@ -216,13 +301,58 @@ public class MapManager : MonoBehaviour
         }
 
         Debug.Log($"地图状态恢复完成，恢复了{reinstantiatedNodes.Count}个节点和{edgeObjects.Count}条边");
+    } // 这行是内部代码块的结束
+
+    } // 添加这个右花括号来关闭 RestoreMapState 方法
+
+    // 生成地图
+    public void GenerateMap()
+    {
+        // 如果地图已经生成，直接返回
+        if (isMapGenerated)
+        {
+            Debug.Log("地图已存在，跳过生成");
+            return;
+        }
+
+        Debug.Log("开始生成新地图");
+
+        // 清空旧数据
+        ClearMap();
+
+        // 创建虚拟节点
+        int totalNodeCount = Random.Range(10, 16);
+        for (int i = 0; i < totalNodeCount; i++)
+        {
+            VirtualNode virtualNode = new VirtualNode
+            {
+                Id = currentId++,
+                Position = this.GenerateValidPosition()
+            };
+            virtualNodes.Add(virtualNode);
+        }
+
+        // 创建虚拟边并形成最小生成树
+        this.ConnectVirtualNodesWithMST();
+
+        // 根据连接数分配节点类型
+        this.AssignVirtualNodeTypes();
+
+        // 根据虚拟信息实例化节点和边
+        InstantiateNodesAndEdges();
+
+        // 标记地图已生成
+        isMapGenerated = true;
+
+        // 立即保存地图状态，确保后续可以恢复
+        SaveCurrentMapState();
+
+        Debug.Log("地图生成完成并已保存状态");
     }
 
-    public void PrepareForBattle()
+    // 添加保存当前地图状态的方法
+    private void SaveCurrentMapState()
     {
-        isReturningFromBattle = true;
-
-        // 保存节点信息以便稍后恢复
         serializedNodes.Clear();
         foreach (var pair in nodeObjects)
         {
@@ -243,9 +373,15 @@ public class MapManager : MonoBehaviour
 
         // 保存边信息
         serializedEdges.Clear();
-        serializedEdges.AddRange(virtualEdges); // 假设virtualEdges没有引用游戏对象，只是纯数据
+        serializedEdges.AddRange(virtualEdges);
 
-        Debug.Log($"已保存地图状态：{serializedNodes.Count}个节点和{serializedEdges.Count}条边");
+        Debug.Log($"已保存当前地图状态：{serializedNodes.Count}个节点和{serializedEdges.Count}条边");
+    }
+
+    public void PrepareForBattle()
+    {
+        isReturningFromBattle = true;
+        SaveCurrentMapState();
     }
 
     // 添加节点
@@ -296,48 +432,6 @@ public class MapManager : MonoBehaviour
                 virtualEdges.Add(new VirtualEdge { Node1Id = node1.Id, Node2Id = node2.Id });
             }
         }
-    }
-
-    // 生成地图
-    public void GenerateMap()
-    {
-        // 如果地图已经生成，直接返回
-        if (isMapGenerated)
-        {
-            Debug.Log("地图已存在，跳过生成");
-            return;
-        }
-
-        Debug.Log("开始生成新地图");
-
-        // 清空旧数据
-        ClearMap();
-
-        // 创建虚拟节点
-        int totalNodeCount = Random.Range(10, 16);
-        for (int i = 0; i < totalNodeCount; i++)
-        {
-            VirtualNode virtualNode = new VirtualNode
-            {
-                Id = currentId++,
-                Position = this.GenerateValidPosition() // 使用this引用内部方法
-            };
-            virtualNodes.Add(virtualNode);
-        }
-
-        // 创建虚拟边并形成最小生成树
-        this.ConnectVirtualNodesWithMST(); // 使用this引用内部方法
-
-        // 根据连接数分配节点类型
-        this.AssignVirtualNodeTypes(); // 使用this引用内部方法
-
-        // 根据虚拟信息实例化节点和边
-        InstantiateNodesAndEdges();
-
-        // 标记地图已生成
-        isMapGenerated = true;
-
-        Debug.Log("地图生成完成");
     }
 
     // 将私有方法改为公共方法
@@ -609,7 +703,8 @@ public class MapManager : MonoBehaviour
     {
         // 创建一个空的 GameObject 用于存放 LineRenderer
         GameObject lineObject = new GameObject("Edge");
-        lineObject.tag = "Edge"; // 添加标签以便能够找到所有边
+        // 移除标签设置，直接通过edgeObjects列表管理
+        // lineObject.tag = "Edge";  // 移除这行
         LineRenderer lineRenderer = lineObject.AddComponent<LineRenderer>();
 
         // 设置 LineRenderer 的属性
@@ -636,8 +731,20 @@ public class MapManager : MonoBehaviour
     // 将这些方法改为public
     public int GenerateNodeNumber(int Id, string nodeType)
     {
-        // 使用 GameController 的随机种子和节点 ID 初始化随机数生成器
-        System.Random random = new System.Random(GameController.Instance.RandomSeed + Id);
+        // 添加空引用检查，如果GameController不存在则使用默认种子
+        int seed = 0;
+        if (GameController.Instance != null)
+        {
+            seed = GameController.Instance.RandomSeed + Id;
+        }
+        else
+        {
+            // 使用时间戳和ID作为备用种子
+            seed = (int)(System.DateTime.Now.Ticks % int.MaxValue) + Id;
+            Debug.LogWarning("GameController.Instance 为空，使用备用随机种子");
+        }
+
+        System.Random random = new System.Random(seed);
 
         // 根据节点类型生成不同范围的随机编号
         switch (nodeType)
@@ -689,5 +796,77 @@ public class MapManager : MonoBehaviour
             default:
                 return "普通节点";
         }
+    }
+
+    // 修改节点访问状态更新方法
+    public void UpdateNodeVisitedState(int nodeId, bool isVisited)
+    {
+        // 更新实际节点状态
+        if (nodeObjects.TryGetValue(nodeId, out GameObject nodeObj))
+        {
+            Node node = nodeObj.GetComponent<Node>();
+            if (node != null)
+            {
+                node.IsVisited = isVisited;
+                
+                // 更新视觉效果
+                if (isVisited)
+                {
+                    var sr = nodeObj.GetComponent<SpriteRenderer>();
+                    if (sr != null)
+                    {
+                        sr.color = new Color(0.5f, 0.5f, 0.5f, 1f);
+                    }
+                }
+            }
+        }
+
+        // 更新序列化数据中的状态
+        var serializedNode = serializedNodes.Find(n => n.id == nodeId);
+        if (serializedNode != null)
+        {
+            serializedNode.isVisited = isVisited;
+        }
+
+        Debug.Log($"节点 {nodeId} 访问状态已更新为: {isVisited}");
+    }
+
+    // 添加完整的地图重置方法（可选，用于调试或特殊需求）
+    public void ResetMapCompletely()
+    {
+        isMapGenerated = false;
+        isReturningFromBattle = false;
+        ClearMap();
+        serializedNodes.Clear();
+        serializedEdges.Clear();
+        Debug.Log("地图已完全重置");
+    }
+
+    // 添加检查地图状态的方法
+    public bool HasSavedMapData()
+    {
+        return serializedNodes.Count > 0 && serializedEdges.Count > 0;
+    }
+
+    // 添加延迟生成地图的协程
+    private IEnumerator DelayedGenerateMap()
+    {
+        // 等待一帧，确保所有对象都已初始化
+        yield return null;
+        
+        // 检查GameController是否存在，如果不存在则等待
+        int waitCount = 0;
+        while (GameController.Instance == null && waitCount < 100)
+        {
+            yield return new WaitForSeconds(0.1f);
+            waitCount++;
+        }
+        
+        if (GameController.Instance == null)
+        {
+            Debug.LogWarning("GameController.Instance 仍为空，将使用备用方案生成地图");
+        }
+        
+        GenerateMap();
     }
 }

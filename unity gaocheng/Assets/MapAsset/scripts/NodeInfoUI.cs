@@ -74,9 +74,7 @@ public class NodeInfoUI : MonoBehaviour
                 Debug.Log($"正在加载场景: {sceneToLoad}");
                 // 准备进入战斗，保存地图状态
                 MapManager.Instance.PrepareForBattle();
-                SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
                 combatNode.StartCombat();
-                sceneToLoad = CombatSceneName;
             }
 
             // BOSS节点处理
@@ -97,6 +95,20 @@ public class NodeInfoUI : MonoBehaviour
             // 加载对应的场景
             if (!string.IsNullOrEmpty(sceneToLoad))
             {
+                // 获取当前玩家数据
+                PlayerData currentData = LoadManager.Instance.GetCurrentPlayerData();
+                if (currentData != null)
+                {
+                    // 更新最新的数据
+                    GameController gameController = FindFirstObjectByType<GameController>();
+                    if (gameController != null)
+                    {
+                        gameController.UpdatePlayerDataBeforeSave();
+                    }
+
+                    // 保存临时状态
+                    SaveManager.Instance.SaveGameState(currentData);
+                }
                 Debug.Log($"正在加载场景: {sceneToLoad}");
                 SceneManager.LoadScene(sceneToLoad, LoadSceneMode.Additive);
             }
