@@ -226,28 +226,44 @@ public class Player : Entity
     }
     public override void TakeDamage(float damage)
     {
-        if (!isInvincible && !isDead)
+        // 添加对象活跃状态检查
+        if (!gameObject.activeInHierarchy || isDead || isInvincible)
         {
-            base.TakeDamage(damage);
+            return;
+        }
+        
+        base.TakeDamage(damage);
+        
+        if (!isDead) // 只有在未死亡时才启动闪烁效果
+        {
             StartCoroutine(InvincibleFlash());
-            // 更新UI
         }
     }
     public void TakeDamageWithKnockback(float damage, Vector2 knockbackDirection)
     {
-        if (!isInvincible && !isDead)
+        // 添加对象活跃状态和死亡状态的检查
+        if (!gameObject.activeInHierarchy || isDead || isInvincible)
         {
-            Debug.Log("击退触发！");
-            base.TakeDamage(damage); // 调用基类基础扣血逻辑
-            ApplyKnockback(knockbackDirection); // 执行击退
-            StartCoroutine(InvincibleFlash());// 更新UI
-            if (invincibleCoroutine != null)
-            {
-                StopCoroutine(invincibleCoroutine);
-                invincibleCoroutine = StartCoroutine(InvincibleFlash());
-            }
-            
+            return; // 如果对象已禁用、已死亡或无敌，直接返回
         }
+        
+        Debug.Log("击退触发！");
+        base.TakeDamage(damage); // 调用基类基础扣血逻辑
+        
+        // 检查是否死亡，如果死亡就不执行击退和闪烁
+        if (isDead)
+        {
+            return;
+        }
+        
+        ApplyKnockback(knockbackDirection); // 执行击退
+        
+        // 停止之前的无敌协程再启动新的
+        if (invincibleCoroutine != null)
+        {
+            StopCoroutine(invincibleCoroutine);
+        }
+        invincibleCoroutine = StartCoroutine(InvincibleFlash());
     }
 
     //===================== 技能系统 =====================
@@ -391,21 +407,37 @@ public class Player : Entity
     //===================== 死亡处理 =====================
     protected override void Die()
     {
-        // 先执行基础的死亡逻辑，但不调用Entity的Die()来避免直接场景切换
+        if (isDead) return; // 防止重复执行死亡逻辑
+        
+        // 先执行基础的死亡逻辑
         isDead = true;
+        
+        // 立即停止所有协程，防止后续调用
         StopAllCoroutines();
-
+        
+        // 设置无敌状态，防止继续受到伤害
+        SetInvincible(true);
+        
         // 触发死亡事件
         OnDeath?.Invoke();
-
+        
         // 通知事件系统
         EventBus.Publish(new DeathEvent(this));
+        
+        // 延迟执行场景切换和对象禁用
+        StartCoroutine(HandleDeathSequence());
+    }
 
+    private IEnumerator HandleDeathSequence()
+    {
+        // 给一小段时间让其他系统处理死亡事件
+        yield return new WaitForSeconds(0.1f);
+        
         // Boss特有逻辑：显示结算面板而不是直接返回地图
         ShowVictoryPanel();
-
-        // 禁用游戏对象
-        gameObject.SetActive(false);
+        
+        // 在场景切换后再禁用游戏对象（实际上场景切换后这个对象就不存在了）
+        // gameObject.SetActive(false); // 注释掉，因为场景切换会销毁所有对象
     }
 
     //===================== 调试辅助 =====================
