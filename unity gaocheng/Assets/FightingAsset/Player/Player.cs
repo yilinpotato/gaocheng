@@ -4,7 +4,7 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine.UI;
-using static UnityEditor.Searcher.SearcherWindow.Alignment;
+
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Animator))]
