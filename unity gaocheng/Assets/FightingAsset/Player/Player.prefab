@@ -80,9 +80,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdc3a6d4745992640971f02b611336f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 1000
+  maxHP: 100
   moveSpeed: 5
-  attackPower: 100
+  attackPower: 20
   OnDamageTaken:
     m_PersistentCalls:
       m_Calls: []

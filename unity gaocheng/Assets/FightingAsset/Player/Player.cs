@@ -66,6 +66,7 @@ public class Player : Entity
     //===================== 初始化 =====================
     protected override void Start()
     {
+
         base.Start();
         rb = GetComponent<Rigidbody2D>();
         playerInput = GetComponent<PlayerInput>();
@@ -294,8 +295,13 @@ public class Player : Entity
     {
         if (!isKnockback)
         {
-            Debug.Log("执行击退方向：" + direction);
-            StartCoroutine(KnockbackRoutine(direction));
+
+            if (!isInvincible && !isDead)
+            {
+                Debug.Log("执行击退方向：" + direction);
+                StartCoroutine(KnockbackRoutine(direction));
+            }
+
         }
     }
 
@@ -385,13 +391,56 @@ public class Player : Entity
     //===================== 死亡处理 =====================
     protected override void Die()
     {
-        base.Die();
-        //游戏结束逻辑
+        // 先执行基础的死亡逻辑，但不调用Entity的Die()来避免直接场景切换
+        isDead = true;
+        StopAllCoroutines();
+
+        // 触发死亡事件
+        OnDeath?.Invoke();
+
+        // 通知事件系统
+        EventBus.Publish(new DeathEvent(this));
+
+        // Boss特有逻辑：显示结算面板而不是直接返回地图
+        ShowVictoryPanel();
+
+        // 禁用游戏对象
+        gameObject.SetActive(false);
     }
 
     //===================== 调试辅助 =====================
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
+    }
+
+
+    private void ShowVictoryPanel()
+    {
+        // 直接加载"结束面板"场景
+        try
+        {
+            Debug.Log("玩家死亡 前往结算 scene...");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("结算面板");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to load victory scene '结算面板': {e.Message}");
+            // 如果加载结束面板失败，回退到直接返回地图
+            ReturnToMap();
+        }
+    }
+
+    private void ReturnToMap()
+    {
+        forTestButton buttonController = FindObjectOfType<forTestButton>();
+        if (buttonController != null)
+        {
+            buttonController.ReturnToMapScene();
+        }
+        else
+        {
+            Debug.LogWarning("ForTestButton not found, cannot return to map");
+        }
     }
 }
