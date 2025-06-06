@@ -206,12 +206,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac1568989775913409f5e3d789237be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  independentMaxHP: 225
+  independentCurrentHP: 225
+  independentAttackPower: 13
+  independentMoveSpeed: 5
   dashForce: 15
   invincibleDuration: 1
   attackSpeed: 1
   shotSpread: 0.1
   shotSpeed: 10
-  skills: []
+  skills:
+  - skillName: Dash
+    triggerKey: 113
+    duration: 0.1
+    cooldown: 2
+    currentCooldown: 0
+  - skillName: Invincibility
+    triggerKey: 101
+    duration: 3
+    cooldown: 6
+    currentCooldown: 0
   SkillInvincibleDuration: 2
   SkillInvincibleCooldown: 10
 --- !u!1 &3791825939809065933
