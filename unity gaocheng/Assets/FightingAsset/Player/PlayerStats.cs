@@ -4,36 +4,102 @@
 public class PlayerStats : MonoBehaviour
 {
     private Entity playerEntity;
+    
+    // 独立的属性存储（当没有Entity组件时使用）
+    [Header("独立属性存储")]
+    [SerializeField] private float independentMaxHP = 100f;
+    [SerializeField] private float independentCurrentHP = 100f;
+    [SerializeField] private float independentAttackPower = 10f;
+    [SerializeField] private float independentMoveSpeed = 5f;
 
     private void Awake()
     {
         playerEntity = GetComponent<Entity>();
+        if (playerEntity == null)
+        {
+            Debug.LogWarning($"PlayerStats on {gameObject.name}: 没有找到Entity组件！将使用独立属性存储。");
+            // 初始化独立属性
+            InitializeIndependentStats();
+        }
     }
 
-    // 封装访问器
-    public float MaxHP
+    private void InitializeIndependentStats()
     {
-        get => playerEntity.MaxHP;
-        set => playerEntity.SetMaxHP(value);
+        independentMaxHP = 100f;
+        independentCurrentHP = 100f;
+        independentAttackPower = 10f;
+        independentMoveSpeed = 5f;
+    }
+
+    // 封装访问器 - 支持独立存储
+    public float MaxHP
+    {
+        get => playerEntity != null ? playerEntity.MaxHP : independentMaxHP;
+        set 
+        { 
+            if (playerEntity != null) 
+            {
+                playerEntity.SetMaxHP(value);
+            }
+            else
+            {
+                independentMaxHP = value;
+                Debug.Log($"独立设置MaxHP: {value}");
+            }
+        }
     }
 
     public float CurrentHP
     {
-        get => playerEntity.CurrentHP;
-        set => playerEntity.SetCurrentHP(value);
+        get => playerEntity != null ? playerEntity.CurrentHP : independentCurrentHP;
+        set 
+        { 
+            if (playerEntity != null) 
+            {
+                playerEntity.SetCurrentHP(value);
+            }
+            else
+            {
+                independentCurrentHP = value;
+                Debug.Log($"独立设置CurrentHP: {value}");
+            }
+        }
     }
 
     public float AttackPower
     {
-        get => playerEntity.AttackPower;
-        set => playerEntity.SetAttackPower(value);
+        get => playerEntity != null ? playerEntity.AttackPower : independentAttackPower;
+        set 
+        { 
+            if (playerEntity != null) 
+            {
+                playerEntity.SetAttackPower(value);
+            }
+            else
+            {
+                independentAttackPower = value;
+                Debug.Log($"独立设置AttackPower: {value}");
+            }
+        }
     }
 
     public float MoveSpeed
     {
-        get => playerEntity.MoveSpeed;
-        set => playerEntity.SetMoveSpeed(value);
+        get => playerEntity != null ? playerEntity.MoveSpeed : independentMoveSpeed;
+        set 
+        { 
+            if (playerEntity != null) 
+            {
+                playerEntity.SetMoveSpeed(value);
+            }
+            else
+            {
+                independentMoveSpeed = value;
+                Debug.Log($"独立设置MoveSpeed: {value}");
+            }
+        }
     }
+
     [Header("玩家基础属性")]
     [SerializeField] private float dashForce = 15f;        // 冲刺力度
     [SerializeField] private float invincibleDuration = 1f; // 无敌时间
@@ -70,9 +136,12 @@ public class PlayerStats : MonoBehaviour
     // 初始化技能冷却时间
     public void InitializeSkills()
     {
-        foreach (var skill in skills)
+        if (skills != null)
         {
-            skill.currentCooldown = 0;
+            foreach (var skill in skills)
+            {
+                skill.currentCooldown = 0;
+            }
         }
     }
     public void RestoreHealth()

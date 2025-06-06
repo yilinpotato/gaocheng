@@ -102,6 +102,8 @@ public class NodeInfoUI : MonoBehaviour
             EventNode eventNode = targetNode as EventNode;
             if (eventNode != null)
             {
+                Debug.Log($"正在加载场景: {sceneToLoad}");
+                eventNode.StartEvent();
                 sceneToLoad = EventSceneName;
             }
 

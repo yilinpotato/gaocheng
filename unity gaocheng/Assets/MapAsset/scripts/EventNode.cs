@@ -7,36 +7,71 @@ public class EventNode : Node
 
     protected virtual string EventSceneName => "EventScene";
 
-
-
     public void RandomizeEvent()
     {
-        // 使用Growth替换Shop
-        EventType[] availableEvents = { EventType.Spring, EventType.Growth, EventType.CombatReward };
-        eventType = availableEvents[Random.Range(0, availableEvents.Length)];
-        Debug.Log($"事件类型被设定为: {eventType}");
+        // 暂时固定为Growth事件
+        eventType = EventType.Growth;
+        
+        // 设置全局事件数据
+        EventSceneData.currentEventType = eventType;
+        
+        Debug.Log($"事件类型被强制设定为: {eventType}");
+        Debug.Log($"EventSceneData.currentEventType 设置为: {EventSceneData.currentEventType}");
     }
 
+    public void StartEvent()
+    {
+        Debug.Log("=== StartEvent 开始 ===");
+        
+        // 强制设置为Growth事件
+        RandomizeEvent();
+        
+        // 显示事件面板
+        ShowEventPanel();
+    }
 
+    private void ShowEventPanel()
+    {
+        try
+        {
+            Debug.Log($"ShowEventPanel - 即将加载场景，事件类型: {EventSceneData.currentEventType}");
+            
+            // 重要：改为Additive模式，不替换当前场景
+            SceneManager.LoadScene("EventScene", LoadSceneMode.Additive);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to load event scene: {e.Message}");
+            ReturnToMap();
+        }
+    }
 
     public void EndEvent()
     {
-
-        // 卸载事件场景
-        SceneManager.UnloadSceneAsync(EventSceneName);
-
-        // 确保地图场景被重新激活
-        Scene mapScene = SceneManager.GetSceneByName("MapScene");
-        if (mapScene.isLoaded)
+        Debug.Log($"事件场景结束");
+        
+        // 卸载事件场景，而不是加载新场景
+        try
         {
-            SceneManager.SetActiveScene(mapScene);
+            SceneManager.UnloadSceneAsync("EventScene");
+            Debug.Log("EventScene 已卸载");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"卸载EventScene失败: {e.Message}");
+        }
+    }
+
+    private void ReturnToMap()
+    {
+        forTestButton buttonController = FindObjectOfType<forTestButton>();
+        if (buttonController != null)
+        {
+            buttonController.ReturnToMapScene();
         }
         else
         {
-            Debug.LogWarning("地图场景未加载");
+            Debug.LogWarning("ForTestButton not found, cannot return to map");
         }
-
-        SceneHider.SetSceneActive("MapScene", true);
-        Debug.Log($"事件场景结束");
     }
 }
