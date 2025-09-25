@@ -136,8 +136,8 @@ double MatchingEngine::calculateTeamMatchScore(const std::vector<std::shared_ptr
 
 std::vector<std::shared_ptr<Player>> MatchingEngine::findOptimalTeam() {
     // 检查是否所有位置都有玩家等待
-    for (const auto& queue : waitingQueues) {
-        if (queue.second.empty()) {
+    for (const auto& [pos, queue] : waitingQueues) {
+        if (queue.empty()) {
             return {}; // 有位置没有玩家，无法组成团队
         }
     }
@@ -167,7 +167,7 @@ std::vector<std::shared_ptr<Player>> MatchingEngine::findOptimalTeam() {
     
     for (Position pos : otherPositions) {
         std::shared_ptr<Player> bestPlayer = nullptr;
-        double bestScore = -1.0;
+        double bestScore = -1000.0;  // 使用更小的初始值
         
         // 创建队列副本以遍历
         auto queueCopy = waitingQueues[pos];
